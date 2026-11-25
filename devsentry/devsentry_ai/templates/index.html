@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <nav class="topnav">
+    <div class="brand">Neux AI</div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="chat">Chat</button>
+      <button class="tab-btn" data-tab="workspace">Code Workspace</button>
+      <button class="tab-btn" data-tab="skills">Skills</button>
+      <button class="tab-btn" data-tab="plugins">Plugins</button>
+      <button class="tab-btn" data-tab="memory">Memory</button>
+      <button class="tab-btn" data-tab="agent">Agent</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+    </div>
+    {% if lab_enabled %}<a href="/lab" target="_blank" class="lab-link-nav">Lab Kerentanan</a>{% endif %}
+  </nav>
+
+  <!-- ============== TAB: CHAT ============== -->
+  <section class="tab-panel active" id="tab-chat">
+    <div class="app">
+      <aside class="sidebar">
+        <label for="mode-select">Mode</label>
+        <select id="mode-select">
+          <option value="general">Umum</option>
+          <option value="fundamentals">Dasar-dasar Coding</option>
+          <option value="website_builder">Membuat Website/Aplikasi</option>
+          <option value="website_config">Konfigurasi Website</option>
+          <option value="security_defensive">Cybersecurity - Defensif</option>
+          <option value="security_education">Cybersecurity - Edukasi Kerentanan</option>
+          <option value="document_analysis">Analisis Dokumen</option>
+        </select>
+
+        <button id="new-chat-btn">+ Percakapan Baru</button>
+
+        <div class="conversation-list" id="conversation-list"></div>
+
+        <hr>
+        <h3>Dokumen</h3>
+        <input type="file" id="doc-upload-input" accept=".pdf,.docx,.txt,.csv,.json">
+        <label class="checkbox-row"><input type="checkbox" id="doc-as-kb"> Jadikan Knowledge Base</label>
+        <button id="doc-upload-btn">Unggah Dokumen</button>
+        <div id="doc-list"></div>
+        <div class="doc-actions">
+          <button id="doc-summarize-btn" class="doc-action-btn">Ringkas</button>
+          <button id="doc-compare-btn" class="doc-action-btn">Bandingkan</button>
+        </div>
+
+        <hr>
+        <h3>Snippet Keamanan</h3>
+        <div id="snippet-list"></div>
+      </aside>
+
+      <main class="chat-area">
+        <div class="chat-toolbar">
+          <label class="checkbox-row"><input type="checkbox" id="compare-toggle"> Bandingkan Multi-Model</label>
+          <div id="compare-model-picker" class="hidden"></div>
+        </div>
+        <div id="chat-window" class="chat-window"></div>
+        <div class="chat-input-area">
+          <textarea id="chat-input" placeholder="Tulis pertanyaan atau permintaan kode di sini..."></textarea>
+          <button id="send-btn">Kirim</button>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============== TAB: CODE WORKSPACE ============== -->
+  <section class="tab-panel" id="tab-workspace">
+    <div class="workspace-layout">
+      <aside class="workspace-sidebar">
+        <h3>Proyek</h3>
+        <div class="row-inline">
+          <input type="text" id="new-project-name" placeholder="nama-proyek-baru">
+          <button id="create-project-btn">+ Buat</button>
+        </div>
+        <div id="project-list"></div>
+
+        <h3>File</h3>
+        <div class="row-inline">
+          <input type="text" id="new-file-path" placeholder="nama_file.py">
+          <button id="create-file-btn">+ File</button>
+        </div>
+        <div id="file-list"></div>
+        <button id="download-project-btn">⬇ Unduh Proyek (.zip)</button>
+      </aside>
+      <main class="editor-area">
+        <div class="editor-toolbar">
+          <span id="current-file-label">Belum ada file dipilih</span>
+          <button id="save-file-btn">Simpan</button>
+          <button id="delete-file-btn">Hapus File</button>
+        </div>
+        <textarea id="code-editor" placeholder="Pilih atau buat file untuk mulai mengedit..." spellcheck="false"></textarea>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============== TAB: SKILLS ============== -->
+  <section class="tab-panel" id="tab-skills">
+    <div class="panel-narrow">
+      <h2>Skill Manager</h2>
+      <p class="hint-text">Import Skill (folder berisi SKILL.md) dari GitHub atau ZIP. Skill yang aktif akan dikenalkan ke AI dan diterapkan saat relevan.</p>
+      <div class="row-inline">
+        <input type="text" id="skill-github-url" placeholder="https://github.com/user/repo">
+        <button id="import-skill-github-btn">Import dari GitHub</button>
+      </div>
+      <div class="row-inline">
+        <input type="file" id="skill-zip-input" accept=".zip">
+        <button id="import-skill-zip-btn">Import ZIP</button>
+      </div>
+      <div id="skill-manager-list" class="manager-list"></div>
+    </div>
+  </section>
+
+  <!-- ============== TAB: PLUGINS ============== -->
+  <section class="tab-panel" id="tab-plugins">
+    <div class="panel-narrow">
+      <h2>Plugin Manager</h2>
+      <p class="hint-text">Plugin bersifat deklaratif (menambah instruksi ke AI lewat plugin.json), bukan menjalankan kode bebas di server — demi keamanan situs yang publik.</p>
+      <div class="row-inline">
+        <input type="text" id="plugin-github-url" placeholder="https://github.com/user/repo">
+        <button id="import-plugin-github-btn">Import dari GitHub</button>
+      </div>
+      <div class="row-inline">
+        <input type="file" id="plugin-zip-input" accept=".zip">
+        <button id="import-plugin-zip-btn">Import ZIP</button>
+      </div>
+      <div id="plugin-manager-list" class="manager-list"></div>
+    </div>
+  </section>
+
+  <!-- ============== TAB: MEMORY ============== -->
+  <section class="tab-panel" id="tab-memory">
+    <div class="panel-narrow">
+      <h2>AI Memory</h2>
+      <p class="hint-text">Hal-hal yang AI ingat lintas percakapan. Kamu bisa tambah, hapus satu, atau hapus semua kapan saja.</p>
+      <div class="row-inline">
+        <input type="text" id="new-memory-input" placeholder="Contoh: Saya lebih suka penjelasan singkat dan langsung ke poin">
+        <button id="add-memory-btn">+ Tambah</button>
+      </div>
+      <button id="clear-memory-btn" class="danger-btn">Hapus Semua Memory</button>
+      <div id="memory-list" class="manager-list"></div>
+    </div>
+  </section>
+
+  <!-- ============== TAB: AGENT ============== -->
+  <section class="tab-panel" id="tab-agent">
+    <div class="panel-narrow">
+      <h2>AI Agent</h2>
+      <p class="hint-text">Jelaskan tugas yang ingin diselesaikan bertahap. AI akan membuat rencana langkah demi langkah — setiap tindakan penting (membuat file) butuh persetujuanmu sebelum dieksekusi.</p>
+      <div class="row-inline">
+        <textarea id="agent-goal-input" placeholder="Contoh: Buatkan struktur dasar proyek landing page dengan HTML, CSS, dan JS"></textarea>
+        <button id="agent-plan-btn">Buat Rencana</button>
+      </div>
+      <div id="agent-plan-list"></div>
+    </div>
+  </section>
+
+  <!-- ============== TAB: SETTINGS ============== -->
+  <section class="tab-panel" id="tab-settings">
+    <div class="panel-narrow">
+      <h2>Model Manager</h2>
+      <label>Model AI Utama</label>
+      <select id="setting-active-model">
+        {% for m in available_models %}
+        <option value="{{ m.id }}">{{ m.label }}</option>
+        {% endfor %}
+      </select>
+
+      <h2>AI Settings</h2>
+      <label>Tingkat Kreativitas (temperature): <span id="temp-value">0.4</span></label>
+      <input type="range" id="setting-temperature" min="0" max="1" step="0.1" value="0.4">
+
+      <label>Panjang Maksimal Jawaban (token)</label>
+      <input type="number" id="setting-max-tokens" min="256" max="8192" step="256" value="4096">
+
+      <label>Gaya Jawaban</label>
+      <select id="setting-response-style">
+        <option value="normal">Normal</option>
+        <option value="ringkas">Ringkas</option>
+        <option value="detail">Sangat Detail</option>
+      </select>
+
+      <label>Bahasa</label>
+      <select id="setting-response-language">
+        <option value="id">Bahasa Indonesia</option>
+        <option value="en">English</option>
+      </select>
+
+      <h2>User Settings</h2>
+      <label>Nama Panggilan</label>
+      <input type="text" id="setting-display-name" placeholder="Nama kamu">
+
+      <label>Tema Tampilan</label>
+      <select id="setting-theme">
+        <option value="dark">Gelap</option>
+        <option value="light">Terang</option>
+      </select>
+
+      <button id="save-settings-btn">Simpan Pengaturan</button>
+
+      <hr>
+      <h3>Kelola Data</h3>
+      <button id="clear-history-btn" class="danger-btn">Hapus Semua Riwayat Percakapan</button>
+    </div>
+  </section>
+
+  <script>
+    window.__initialConversations = {{ conversations | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
